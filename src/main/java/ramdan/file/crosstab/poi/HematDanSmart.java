@@ -1,15 +1,11 @@
 package ramdan.file.crosstab.poi;
 
 import lombok.val;
-import org.apache.poi.xssf.streaming.SXSSFRow;
-import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
 
-public class Hemat extends Crosstab{
+public class HematDanSmart extends Crosstab{
 
     private int rowAccessWindowSize = 10;
 
@@ -20,16 +16,6 @@ public class Hemat extends Crosstab{
     }
     private File input;
     private File output;
-    public static void main(String ... arg){
-        val boros= new Hemat();
-        if(arg.length==2) {
-            boros.input = new File(arg[0]);
-            boros.output = new File(arg[1]);
-            boros.run();
-        }else {
-            boros.testMemory();
-        }
-    }
 
     private void loadHeader() throws IOException {
         val lineReader = new BufferedReader(new FileReader(input));
@@ -60,7 +46,15 @@ public class Hemat extends Crosstab{
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
+    }
+    public static void main(String ... arg){
+        val boros= new HematDanSmart();
+        if(arg.length==2) {
+            boros.input = new File(arg[0]);
+            boros.output = new File(arg[1]);
+            boros.run();
+        }else {
+            boros.testMemory();
+        }
     }
 }

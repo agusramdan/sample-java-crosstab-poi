@@ -12,18 +12,6 @@ public class Boros extends Crosstab {
     private File input;
     private File output;
     private List<String[]> data = new ArrayList<String[]>();
-    public static void main(String ... arg){
-        val boros= new Boros();
-        if(arg.length==2) {
-            boros.input = new File(arg[0]);
-            boros.output = new File(arg[1]);
-            boros.run();
-        }else {
-            boros.testMemory();
-        }
-    }
-
-
     @Override
     public void run() {
         try {
@@ -39,10 +27,21 @@ public class Boros extends Crosstab {
                 push(rcv[0],rcv[1],rcv[2]);
             }
             workbook.write( new FileOutputStream(output));
+            workbook.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
 
 
+    }
+    public static void main(String ... arg){
+        val boros= new Boros();
+        if(arg.length==2) {
+            boros.input = new File(arg[0]);
+            boros.output = new File(arg[1]);
+            boros.run();
+        }else {
+            boros.testMemory();
+        }
     }
 }

@@ -35,11 +35,17 @@ public class Boros extends Crosstab {
     public static void main(String ... arg){
         val boros= new Boros();
         if(arg.length==2) {
-            boros.input = new File(arg[0]);
-            boros.output = new File(arg[1]);
-            boros.run();
+            if("test".equals(arg[0])){
+                boros.output = new File("test.xls");
+                boros.testMemory(Integer.parseInt(arg[1]));
+            }else{
+                boros.input = new File(arg[0]);
+                boros.output = new File(arg[1]);
+                boros.run();
+            }
+
         }else {
-            boros.testMemory();
+            System.out.printf("No parameter");
         }
     }
 }

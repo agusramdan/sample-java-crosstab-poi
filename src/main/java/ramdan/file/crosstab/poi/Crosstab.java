@@ -5,7 +5,6 @@ import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -20,7 +19,6 @@ public abstract class Crosstab implements Runnable{
     protected Workbook workbook;
     protected Sheet sheet;
     protected Row row;
-
     protected Map<Integer,Double> totalRow = new HashMap<Integer, Double>();
     protected String lastRowKey = null;
 
@@ -66,11 +64,8 @@ public abstract class Crosstab implements Runnable{
         coll.setCellType(CellType.NUMERIC);
 
     }
-    protected void ensureWorkbookReady() {
-        if (this.workbook == null) {
-            this.workbook = new XSSFWorkbook();
-        }
-    }
+    protected abstract void ensureWorkbookReady();
+
     protected void ensureSheetReady() {
         ensureWorkbookReady();
         if (this.sheet == null) {

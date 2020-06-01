@@ -1,6 +1,5 @@
 package ramdan.file.crosstab.poi;
 
-import lombok.Setter;
 import lombok.val;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 
@@ -15,8 +14,8 @@ public class HematDanSmart extends Crosstab{
             this.workbook = new SXSSFWorkbook(this.rowAccessWindowSize);
         }
     }
-    private File input;
 
+    private File input;
     private File output;
 
     private void loadHeader() throws IOException {
@@ -30,35 +29,52 @@ public class HematDanSmart extends Crosstab{
     }
 
     private void loadData() throws IOException {
-        val lineReader = new BufferedReader(new FileReader(input));
-        String line;
-        while ((line =lineReader.readLine())!=null){
-            val rcv = line.split(",");
-            addColName(rcv[1]);
+        val fr= new FileReader(input);
+        try {
+            val lineReader = new BufferedReader(fr);
+            String line;
+            while ((line = lineReader.readLine()) != null) {
+                val rcv = line.split(",");
+                addColName(rcv[1]);
+            }
+        }finally {
+            if(fr!=null){
+                fr.close();
+            }
         }
-        super.createHeader();
     }
     @Override
     public void run() {
+        OutputStream os = null;
         try {
             loadHeader();
             loadData();
-            workbook.write( new FileOutputStream(output));
+            os= new FileOutputStream(output);
+            workbook.write(os);
             workbook.close();
         } catch (IOException e) {
             e.printStackTrace();
+        }finally {
+            if(os!=null){
+                try {
+                    os.flush();
+                    os.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
     public static void main(String ... arg){
-        val boros= new HematDanSmart();
+        val smart= new HematDanSmart();
         if(arg.length==2) {
             if("test".equals(arg[0])){
-                boros.output = new File("test.xls");
-                boros.testMemory(Integer.parseInt(arg[1]));
+                smart.output = new File("test.xls");
+                smart.testMemory(Integer.parseInt(arg[1]));
             }else{
-                boros.input = new File(arg[0]);
-                boros.output = new File(arg[1]);
-                boros.run();
+                smart.input = new File(arg[0]);
+                smart.output = new File(arg[1]);
+                smart.run();
             }
         }else {
             System.out.printf("No parameter");

@@ -1,12 +1,22 @@
-# Sample java crostab poi Menghindari memory leak saat processing file.
+# Cara Smart: Menghindari Memory Leak POI.
 
 
-Membuat crostab java dengan poi yang hemat memory kurang dari 64MB dengan jumlah kolom 8rb max heder 128 karakter.
+Membuat crostab java dengan POI yang hemat memory kurang dari 64MB dengan jumlah kolom 8rb max heder 128 karakter.
 
 Salah satu kunci proses file yang hemat memori adalah meminimalkan hold data di memori terlalu lama.
-Dalam prosessing file selalu di usahakan untuk tidak melakukan loading seluruh data dari file ke memori.
+Karena dalam prosessing file selalu di usahakan untuk tidak melakukan loading seluruh data dari file ke memori.
 
-Dalam project ini akan mendemonstrasikan 2 crostab yang satu boros memory dan yang satu lagi hemat memori.
+Yang kedua gunakan Class SXSSFWorkbook dengan menambahakan dependecy
+
+```xml
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml</artifactId>
+			<version>3.17</version>
+		</dependency>
+```
+
+Dalam project ini akan mendemonstrasikan 2 crosstab yang satu boros memory dan yang satu lagi hemat memori.
 
 ## Cara kerja Prosess
 
@@ -37,21 +47,31 @@ Menjadi
  
 Pada aplikasi ini terurut berdasarkan Key row data yang akan di proses harus terurut berdasarkan key row tersebut.
 
-
 Untuk generate Crosstab bisa lihat pada class Crosstab
 
 ## Class Boros Memori
-Class boros memori mempunyai karakteristik meyimpan data file dalam memori dalam waktu yang lama. Dengan cara ini memori akan cepat habis.
+Class Boros memori mempunyai karakteristik meyimpan data file dalam memori dalam waktu yang lama. Dengan cara ini memori akan cepat habis.
 
 ```java
 public class Boros extends Crosstab {
     private File input;
     private File output;
     private List<String[]> data = new ArrayList<String[]>();
+    
+    protected void ensureWorkbookReady() {
+        if (this.workbook == null) {
+            this.workbook = new XSSFWorkbook();
+        }
+    }
+    
     @Override
     public void run() {
+        FileReader fr=null;
+        OutputStream fos = null;
         try {
-            val lineReader = new BufferedReader(new FileReader(input));
+            fr = new FileReader(input);
+            fos =new FileOutputStream(output);
+            val lineReader = new BufferedReader(fr);
             String line;
             while ((line =lineReader.readLine())!=null){
                 val rcv = line.split(",");
@@ -62,22 +82,12 @@ public class Boros extends Crosstab {
             for (String[] rcv: data) {
                 push(rcv[0],rcv[1],rcv[2]);
             }
-            workbook.write( new FileOutputStream(output));
+            workbook.write( fos);
             workbook.close();
         } catch (IOException e) {
             e.printStackTrace();
-        }
-
-
-    }
-    public static void main(String ... arg){
-        val boros= new Boros();
-        if(arg.length==2) {
-            boros.input = new File(arg[0]);
-            boros.output = new File(arg[1]);
-            boros.run();
-        }else {
-            boros.testMemory();
+        }finally {
+            //....
         }
     }
 }
@@ -86,17 +96,11 @@ public class Boros extends Crosstab {
 
 ## Class HematDanSmart
 
-Pembeda aplikasi hemat dan boros adalah bagaimana memperlakukan data. 
-Untuk class Hemat berusah agar data tidak terlalu lama di simpan di memori.
+Class hemat memori tidak akan lama meyimpan data di memori. Sehingga bisa langsung di lakukan GC.
 
 ```java
 public class HematDanSmart extends Crosstab{
 
-    private int rowAccessWindowSize = 10;
-
-    private File input;
-    private File output;
-    
     private void loadHeader() throws IOException {
         val lineReader = new BufferedReader(new FileReader(input));
         String line;
@@ -116,6 +120,7 @@ public class HematDanSmart extends Crosstab{
         }
         super.createHeader();
     }
+    
     @Override
     public void run() {
         try {
@@ -127,16 +132,7 @@ public class HematDanSmart extends Crosstab{
             e.printStackTrace();
         }
     }
-    public static void main(String ... arg){
-        val boros= new HematDanSmart();
-        if(arg.length==2) {
-            boros.input = new File(arg[0]);
-            boros.output = new File(arg[1]);
-            boros.run();
-        }else {
-            boros.testMemory();
-        }
-    }
+    
 }    
 ```
 
@@ -144,11 +140,14 @@ Agar memori tidak terlalu banyak. Maka menggunakan class org.apache.poi.xssf.str
 Untuk configurasi ini hanya 10 row saja yang di sipan di memori. Sehingga aplikasi bisa lebih hemat memori. Dan prosess GC lebih cepat
 
 ```java
-      private int rowAccessWindowSize = 10; 
-      public void ensureWorkbookReady() {
+public class HematDanSmart extends Crosstab{
+    // ....
+    private int rowAccessWindowSize = 10; 
+    public void ensureWorkbookReady() {
         if (this.workbook == null) {
             this.workbook = new SXSSFWorkbook(this.rowAccessWindowSize);
         }
     }
-    
+    // ...
+}
 ```

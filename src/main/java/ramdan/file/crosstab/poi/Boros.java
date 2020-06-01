@@ -1,6 +1,7 @@
 package ramdan.file.crosstab.poi;
 
 import lombok.val;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -10,10 +11,19 @@ public class Boros extends Crosstab {
     private File input;
     private File output;
     private List<String[]> data = new ArrayList<String[]>();
+    protected void ensureWorkbookReady() {
+        if (this.workbook == null) {
+            this.workbook = new XSSFWorkbook();
+        }
+    }
     @Override
     public void run() {
+        FileReader fr=null;
+        OutputStream fos = null;
         try {
-            val lineReader = new BufferedReader(new FileReader(input));
+            fr = new FileReader(input);
+            fos =new FileOutputStream(output);
+            val lineReader = new BufferedReader(fr);
             String line;
             while ((line =lineReader.readLine())!=null){
                 val rcv = line.split(",");
@@ -24,13 +34,27 @@ public class Boros extends Crosstab {
             for (String[] rcv: data) {
                 push(rcv[0],rcv[1],rcv[2]);
             }
-            workbook.write( new FileOutputStream(output));
+            workbook.write( fos);
             workbook.close();
         } catch (IOException e) {
             e.printStackTrace();
+        }finally {
+            if(fr!=null){
+                try {
+                    fr.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if(fos!=null){
+                try {
+                    fos.flush();
+                    fr.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
-
-
     }
     public static void main(String ... arg){
         val boros= new Boros();

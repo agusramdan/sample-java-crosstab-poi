@@ -35,7 +35,7 @@ public class HematDanSmart extends Crosstab{
             String line;
             while ((line = lineReader.readLine()) != null) {
                 val rcv = line.split(",");
-                addColName(rcv[1]);
+                push(rcv[0],rcv[1],rcv[2]);
             }
         }finally {
             if(fr!=null){

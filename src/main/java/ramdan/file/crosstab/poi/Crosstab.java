@@ -1,5 +1,6 @@
 package ramdan.file.crosstab.poi;
 
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
@@ -8,9 +9,9 @@ import org.apache.poi.ss.usermodel.Workbook;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
+@Slf4j
 public abstract class Crosstab implements Runnable{
 
     private Map<String,Integer> indexLookup= new HashMap<String,Integer>();
@@ -21,6 +22,14 @@ public abstract class Crosstab implements Runnable{
     protected Row row;
     protected Map<Integer,Double> totalRow = new HashMap<Integer, Double>();
     protected String lastRowKey = null;
+
+    private String[] colls;
+
+    private Set<String> endCols;
+    public Crosstab(String ... colls) {
+        this.colls = colls;
+        endCols= new HashSet<String>(Arrays.asList(colls));
+    }
 
     protected void checkSameRow(String rowKey){
         if(lastRowKey==null|| !lastRowKey.equals(rowKey)){
@@ -96,6 +105,14 @@ public abstract class Crosstab implements Runnable{
     int contentStart;
     public void createHeader(){
         prepareNewRow();
+        if(colls!= null && colls.length>0){
+            for (String string : colls) {
+                if(!indexLookup.containsKey(string)){
+                    indexLookup.put(string,indexLookup.size());
+                }
+            }
+        }
+
         for (Map.Entry<String,Integer> entry : indexLookup.entrySet()){
             val cell = row.createCell(entry.getValue(), CellType.STRING);
             cell.setCellValue(entry.getKey());
@@ -106,7 +123,12 @@ public abstract class Crosstab implements Runnable{
         this.rownumber = rownumber;
         createHeader();
     }
+
     public void addColName(String string){
+        if(endCols.contains(string)){
+            log.warn("last header {} ",string);
+            return;
+        }
         if(!indexLookup.containsKey(string)){
             indexLookup.put(string,indexLookup.size());
         }

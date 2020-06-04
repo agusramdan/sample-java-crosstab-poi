@@ -2,6 +2,7 @@ package ramdan.file.crosstab.poi;
 
 import lombok.Setter;
 import lombok.val;
+import lombok.var;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 
 import java.io.*;
@@ -73,12 +74,19 @@ public class HematDanSmart extends Crosstab{
     }
     public static void main(String ... arg){
 
-        val smart= new HematDanSmart();
         if(arg.length==2) {
             if("test".equals(arg[0])){
+                val smart= new HematDanSmart();
                 smart.output = new File("test.xls");
                 smart.testMemory(Integer.parseInt(arg[1]));
             }else{
+                HematDanSmart smart;
+                if(arg.length>3){
+                    String[] rightCollNames = arg[3].split(",");
+                    smart = new HematDanSmart(rightCollNames);
+                }else {
+                    smart = new HematDanSmart();
+                }
                 smart.input = new File(arg[0]);
                 smart.output = new File(arg[1]);
                 smart.run();

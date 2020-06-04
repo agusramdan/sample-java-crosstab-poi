@@ -1,5 +1,6 @@
 package ramdan.file.crosstab.poi;
 
+import lombok.Setter;
 import lombok.val;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 
@@ -7,6 +8,11 @@ import java.io.*;
 
 public class HematDanSmart extends Crosstab{
 
+    public HematDanSmart(String... colls) {
+        super(colls);
+    }
+
+    @Setter
     private int rowAccessWindowSize = 10;
 
     public void ensureWorkbookReady() {
@@ -66,6 +72,7 @@ public class HematDanSmart extends Crosstab{
         }
     }
     public static void main(String ... arg){
+
         val smart= new HematDanSmart();
         if(arg.length==2) {
             if("test".equals(arg[0])){
